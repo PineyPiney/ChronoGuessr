@@ -1,9 +1,5 @@
 *{
-    text-align: center;
-}
-
-.header{
-    color: yellow;
+    text-align: left;
 }
 
 button{
@@ -31,6 +27,7 @@ button.answer-button{
 h1{
     font-style: italic;
     font-family: Georgia, 'Times New Roman', Times, serif;
+    color: purple;
 }
 
 div{

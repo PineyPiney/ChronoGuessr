@@ -1,4 +1,6 @@
-const http = require(`http`)
+require(['http'], http => {
+    
+});
 
 function select(query){
     return document.querySelector(query);

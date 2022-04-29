@@ -1,0 +1,38 @@
+*{
+    text-align: center;
+}
+
+.header{
+    color: darkblue;
+}
+
+button{
+    color: crimson;
+    font-size:large;
+    width: 10%;
+    height: 100%;
+}
+
+button:active{
+    color: blue;
+}
+
+button.next-button{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-variant: small-caps;
+
+    left: 80%;
+}
+
+button.answer-button{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+h1{
+    font-style: italic;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+div{
+    margin: 25px;
+}

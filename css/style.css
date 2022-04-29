@@ -14,7 +14,7 @@ button{
 }
 
 button:active{
-    color: blue;
+    color: orange;
 }
 
 button.next-button{

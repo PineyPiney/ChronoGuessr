@@ -5,11 +5,12 @@
 button{
     color: green;
     font-size:large;
-    width: 10%;
-    height: 100%;
+    padding: 2%;
+    width: 20%;
+    border-radius: 20px;
 }
 
-button:active{
+button:active:enabled{
     color: orange;
 }
 
@@ -22,6 +23,11 @@ button.next-button{
 
 button.answer-button{
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+button:disabled{
+    color: aqua;
+    background-color: blueviolet;
 }
 
 h1{

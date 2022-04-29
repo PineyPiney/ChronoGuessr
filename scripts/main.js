@@ -1,8 +1,3 @@
-define(['require', 'my-module'], function(require, myModule){
-    return {
-        myModule
-    }
-})
 
 function select(query){
     return document.querySelector(query);

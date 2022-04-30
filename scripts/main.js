@@ -1,6 +1,13 @@
+var Answer;
 require(['http'], http => {
     
 });
+
+/*
+require(['scripts/Image'], http => {
+    Answer = http.Answer
+});
+*/
 
 function select(query){
     return document.querySelector(query);

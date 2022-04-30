@@ -6,3 +6,7 @@ class Answer{
         this.date = date
     }
 }
+
+module.exports = {
+    Answer
+}

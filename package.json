@@ -2,9 +2,10 @@
   "name": "chrono",
   "version": "0.0.1",
   "description": "Application Description",
-  "main": "scripts/main.js",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node scripts/main.js"
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,17 @@
   "bugs": {
     "url": "https://github.com/PineyPiney/ChronoGuessr/issues"
   },
-  "homepage": "https://github.com/PineyPiney/ChronoGuessr#readme"
+  "homepage": "https://github.com/PineyPiney/ChronoGuessr#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.10",
+    "jsdom": "^19.0.0",
+    "lodash": "^4.17.21",
+    "request-promise": "^4.2.6"
+  },
+  "devDependencies": {
+    "serve": "^13.0.2",
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
+  }
 }

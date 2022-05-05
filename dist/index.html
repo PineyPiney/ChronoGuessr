@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <!-- Link the CSS and ICO files-->
+        <link rel="stylesheet" href="../css/style.css">
+        <link rel="ico" href="https://raw.githubusercontent.com/PineyPiney/ChronoGuessr/main/favicon.ico">
+
+        <title>ChronoGuessr</title>
+    </head>
+    <body>
+        <header>
+            <div>
+                <h1 class="title">ChronoGuessr</h1>
+            </div>
+        </header>
+
+        <div id="game">
+            <div id="buttons">
+                <button class="next-button">Next Image</button>
+                <button class="answer-button">Answer</button>
+            </div>
+            <div id="image">
+                <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/1/13/LeafyVoting.png" alt="">
+            </div>
+            <div id="guess">
+                <input type="text">
+            </div>
+        </div>
+        
+   
+        <!-- Link the JS files, this must go at the end of the HTML file -->
+
+        <?php
+            include("index.php")
+        ?>
+        <script src="https://requirejs.org/docs/release/2.3.6/minified/require.js"></script>
+        <script src="main.js"></script>
+    </body>
+</html>

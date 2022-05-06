@@ -1,8 +1,9 @@
 "use strict";
 
-import _ from "lodash"
-import axios from "axios"
-import ch from "cheerio"
+import _ from "lodash";
+import axios from "axios";
+import ch from "cheerio";
+import images from "./images.js"
 
 class Answer{
     constructor(url, name, date) {
@@ -12,19 +13,19 @@ class Answer{
     }
 }
 
+function select(query) {
+    return document.querySelector(query);
+}
+
+function selectAll(query) {
+    return document.querySelectorAll(query);
+}
+
+/*
 const getDocument = async(url) => { 
     try {
-        console.log("Getting Data")
-        const { data } = await axios.get(url, {
-            method: 'GET',
-            mode: 'no-cors',
-            headers: {
-              'Access-Control-Allow-Origin': 'https://www.google.co.uk',
-              'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-            credentials: 'same-origin',
-          });
+        console.log("Getting Data");
+        const { data } = await axios.get(url);
         console.log("Got Data");
         console.log(data);
         return ch.load(data);
@@ -35,7 +36,11 @@ const getDocument = async(url) => {
     }
 };
 
-const getImage = async(year) => { 
+function getGettyImage() {
+    return new Answer();
+}
+
+const getLifeImage = async() => {
     try{
         console.log(`Getting image from ${year}`)
         const doc = await getDocument(`https://www.google.co.uk/search?q=${year}+source:life&tbm=isch`)
@@ -50,57 +55,44 @@ const getImage = async(year) => {
     catch (e){
 
     }
-};
+}
+*/
 
-function select(query) {
-    return document.querySelector(query);
+async function getFileImage(){
+    var imgs = Object.keys(images)
+    var src = imgs[Math.floor(Math.random() * imgs.length)]
+    var date = images[src]
+    return new Answer(src, "Image", date);
 }
 
-function selectAll(query) {
-    return document.querySelectorAll(query);
-}
-
-function getGettyImage() {
-    return new Answer();
-}
-
-function getLifeImage() {
-    return getImage(Math.floor(Math.random() * 200) + 1800)
-}
-
-function getNewPicture(e) {
-    console.log(e);
-    answer = getLifeImage();
-    disable(answerButton, answer == null);
+async function getNewPicture(e) {
+    answer = await getFileImage();
     imageTag.setAttribute("src", answer.url);
 }
 
 function giveAnswer(e) {
-    console.log(e);
-    answer = null;
-    disable(answerButton, answer == null);
+    addScore(e.target);
+    getNewPicture();
 }
 
-function disable(element, state) {
-    element;
+function addScore(element){
+    var newPoints = Math.max(0, Math.floor(10000/Math.abs(answer.date - parseInt(element.value))));
+    points += newPoints
+    scoreText.textContent = `You scored ${newPoints} points, the correct year was ${answer.date}.\n You now have ${points} points`;
+    element.value = "";
 }
 
-console.log("Getting Document");
-getDocument("https://www.google.co.uk/search?q=1920+source:life&tbm=isch")
-//getImage(1920)
 
-/*
 var answer;
-var nextButton = select("button.next-button");
-var answerButton = select("button.answer-button");
-var imageDiv = select("div.image");
+var points = 0;
+getNewPicture();
+
+var answerBox = select("input[type=text]")
+var scoreText = select("#score")
 var imageTag = select("img");
 
-nextButton.addEventListener("click", getNewPicture);
-answerButton.addEventListener("click", giveAnswer);
+console.log("score is :")
+console.log(scoreText);
 
-answer = getImage(1920);
-imageTag.setAttribute("src", answer.url)
+answerBox.addEventListener("change", giveAnswer)
 
-disable(answerButton, true);
-*/

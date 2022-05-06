@@ -19,25 +19,20 @@
         </header>
 
         <div id="game">
-            <div id="buttons">
-                <button class="next-button">Next Image</button>
-                <button class="answer-button">Answer</button>
-            </div>
             <div id="image">
                 <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/1/13/LeafyVoting.png" alt="">
             </div>
             <div id="guess">
                 <input type="text">
             </div>
+            <div id="scoreboard">
+                <h2 id="score">Welcome to ChronoGuessr! <br> Points: 0</h2>
+            </div>
         </div>
         
    
         <!-- Link the JS files, this must go at the end of the HTML file -->
-
-        <?php
-            include("index.php")
-        ?>
         <script src="https://requirejs.org/docs/release/2.3.6/minified/require.js"></script>
-        <script src="main.js"></script>
+        <script src="entry.js"></script>
     </body>
 </html>

@@ -2,7 +2,6 @@
   "name": "chrono",
   "version": "0.0.1",
   "description": "Application Description",
-  "type": "module",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
@@ -21,6 +20,7 @@
   "dependencies": {
     "axios": "^0.27.2",
     "cheerio": "^1.0.0-rc.10",
+    "fs": "^0.0.1-security",
     "jsdom": "^19.0.0",
     "lodash": "^4.17.21",
     "request-promise": "^4.2.6"

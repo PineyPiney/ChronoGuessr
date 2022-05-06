@@ -1,9 +1,10 @@
 "use strict";
 
-import _ from "lodash";
 import axios from "axios";
 import ch from "cheerio";
 import images from "./images.js"
+import gImages from "./gettyImages.js"
+import { difference } from "lodash";
 
 class Answer{
     constructor(url, name, date) {
@@ -58,41 +59,57 @@ const getLifeImage = async() => {
 }
 */
 
-async function getFileImage(){
-    var imgs = Object.keys(images)
-    var src = imgs[Math.floor(Math.random() * imgs.length)]
-    var date = images[src]
-    return new Answer(src, "Image", date);
+async function getFileImage(imgDict){
+    var years = Object.keys(imgDict);
+    var year = years[Math.floor(Math.random() * years.length)];
+
+    var imgs = imgDict[year];
+    var img = imgs[Math.floor(Math.random() * imgs.length)];
+
+    var name = img["name"]
+    var date = img["date"]
+    var src = img["src"]
+
+    return new Answer(src, name, date);
 }
 
 async function getNewPicture(e) {
-    answer = await getFileImage();
-    imageTag.setAttribute("src", answer.url);
+    currentImage = await getFileImage(gImages);
+    imageTag.setAttribute("src", currentImage.url);
 }
 
 function giveAnswer(e) {
-    addScore(e.target);
+    addScore();
     getNewPicture();
 }
 
-function addScore(element){
-    var newPoints = Math.max(0, Math.floor(10000/Math.abs(answer.date - parseInt(element.value))));
-    points += newPoints
-    scoreText.textContent = `You scored ${newPoints} points, the correct year was ${answer.date}.\n You now have ${points} points`;
-    element.value = "";
+function addScore(){
+    let correct = Date.parse(currentImage.date);
+    console.log(`Guess Millis: ${guess}`)
+    console.log(`Correct Millis: ${correct}`)
+    let error = Math.max(1, Math.abs(guess - correct) / 1e10)
+    var newPoints = Math.max(0, Math.floor(1000/Math.sqrt(error)));
+    points += newPoints;
+    scoreText.textContent = `The correct date was ${currentImage.date}, you scored ${newPoints} points.\n You now have ${points} points`;
+
+    answerBox.value = "";
+    calendar.value = "";
 }
 
 
-var answer;
+var currentImage;
+var guess;
 var points = 0;
 getNewPicture();
 
-var answerBox = select("input[type=text]")
-var scoreText = select("#score")
 var imageTag = select("img");
 
-console.log("score is :")
-console.log(scoreText);
+var answerBox = select("input[type=text]");
+var calendar = select("input[type=date]");
+var button = select("input[type=button]");
 
-answerBox.addEventListener("change", giveAnswer)
+var scoreText = select("#score");
+answerBox.addEventListener("change", (event) => guess = Date.parse(event.target.value));
+calendar.addEventListener("change", (event) => guess = Date.parse(event.target.value));
+button.addEventListener("click", giveAnswer);
 

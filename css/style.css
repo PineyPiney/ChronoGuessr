@@ -2,6 +2,16 @@
     text-align: center;
 }
 
+h1{
+    font-style: italic;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: purple;
+}
+
+img{
+    max-height: 60vh;
+}
+
 button{
     color: green;
     font-size:large;
@@ -28,14 +38,4 @@ button.answer-button{
 button:disabled{
     color: aqua;
     background-color: blueviolet;
-}
-
-h1{
-    font-style: italic;
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    color: purple;
-}
-
-div{
-    margin: 25px;
 }

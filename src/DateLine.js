@@ -14,7 +14,7 @@ const spaces = {
 class DateLine extends HTMLElement{
 
     get value(){
-        return (this.right - this.left) / 2
+        return (this.right + this.left) / 2
     }
 
     get canvas(){
@@ -53,14 +53,14 @@ class DateLine extends HTMLElement{
     scrollZoom = function(e){
         e.preventDefault();
 
+        // Still is the date where the cursor is, and so is the date that should stay in place
         var minX = this.canvas.getBoundingClientRect().left;
         var canvasX = e.clientX - minX
-        var pos = canvasX / this.canvas.clientWidth;
-        var still = this.left + (this.right - this.left) * pos;
+        var relativeX = canvasX / this.canvas.clientWidth;
+        var still = this.left + (this.right - this.left) * relativeX;
 
+        // Then left and right dates should be moved, but limited to the earliest and latest dates
         var mult = 1.2 ** (e.deltaY * 0.01)
-
-
         this.left = Math.max(still + (this.left - still) * mult, this.earliest);
         this.right = Math.min(still + (this.right - still) * mult, this.latest);
 
@@ -75,8 +75,10 @@ class DateLine extends HTMLElement{
         var l = new Date(this.left);
         var r = new Date(this.right);
 
+        // Space is the amount of time in range on the canvas, and num and part are decided based on that
         var space = this.right - this.left;
-        var spacing = Object.entries(spaces).find((e) => e[1] > space / 5);
+        var spaceEntries = Object.entries(spaces);
+        var spacing = spaceEntries.find((e) => e[1] > space / 5);
         var [num, part] = spacing[0].split(" ");
         num = parseInt(num)
 
@@ -89,40 +91,16 @@ class DateLine extends HTMLElement{
         var dates = array.map(n => new Date(`${n}-01-01`));
         
         this.drawDates(ctx, l, r, dates, "year")
+        ctx.fillText(new Date(this.value).getUTCFullYear(), this.canvas.width * 0.5, this.canvas.height * 0.25);
 
-        console.log(`Milliseconds: ${space}`)
-
-        /*
-        if(space > getPartSize("year") * 100) {
-            console.log("Centuries")
-            this.drawCenturies(ctx, l, r);
-        }
-        else if(space > getPartSize("year") * 10) {
-            console.log("Decades")
-        }
-        else if(space > getPartSize("year")) {
-            console.log("Years")
-        }
-        else if(space > getPartSize("month")) {
-            console.log("Months")
-        }
-        else if(space > getPartSize("day") * 7) {
-            console.log("Weeks")
-        }
-        else {
-            console.log("Days")
-        }
-        */
-    }
-
-    drawCenturies = function(ctx, l, r){
-        ctx.fillText(l.getUTCFullYear().toString(), 0, this.canvas.height);
-        ctx.textAlign = "right"
-        ctx.fillText(r.getUTCFullYear().toString(), this.canvas.width, this.canvas.height);
+        this.dispatchEvent(new Event("change", {
+            target: this
+        }))
     }
 
     drawDates =  function(ctx, l, r, dates, part){
         ctx.textAlign = "center"
+        ctx.fillStyle = "white"
         for(var date of dates){
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
             switch(part){

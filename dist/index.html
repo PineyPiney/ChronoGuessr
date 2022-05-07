@@ -23,9 +23,12 @@
                 <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/1/13/LeafyVoting.png" alt="ChronoGuessr Image">
             </div>
             <div id="guess">
+                <date-line min="1754-01-01" max="1999-12-31"></date-line>
+                <input type="button" value="Answer">
+            </div>
+            <div>
                 <input type="text">
                 <input type="date" min="1754-01-01" max="1999-12-31">
-                <input type="button" value="Answer">
             </div>
             <div id="scoreboard">
                 <h2 id="score">Welcome to ChronoGuessr! <br> Points: 0</h2>
@@ -34,7 +37,6 @@
         
    
         <!-- Link the JS files, this must go at the end of the HTML file -->
-        <script src="https://requirejs.org/docs/release/2.3.6/minified/require.js"></script>
         <script src="entry.js"></script>
     </body>
 </html>

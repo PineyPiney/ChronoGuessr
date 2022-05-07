@@ -4,7 +4,7 @@ import axios from "axios";
 import ch from "cheerio";
 import images from "./images.js"
 import gImages from "./gettyImages.js"
-import { difference } from "lodash";
+import DateLine from "./DateLine.js";
 
 class Answer{
     constructor(url, name, date) {
@@ -85,8 +85,6 @@ function giveAnswer(e) {
 
 function addScore(){
     let correct = Date.parse(currentImage.date);
-    console.log(`Guess Millis: ${guess}`)
-    console.log(`Correct Millis: ${correct}`)
     let error = Math.max(1, Math.abs(guess - correct) / 1e10)
     var newPoints = Math.max(0, Math.floor(1000/Math.sqrt(error)));
     points += newPoints;
@@ -96,11 +94,12 @@ function addScore(){
     calendar.value = "";
 }
 
-
 var currentImage;
 var guess;
 var points = 0;
 getNewPicture();
+
+customElements.define("date-line", DateLine)
 
 var imageTag = select("img");
 

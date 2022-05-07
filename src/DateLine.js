@@ -1,4 +1,7 @@
 const spaces = [
+    getPartSize("month"),
+    getPartSize("month") * 3,
+    getPartSize("month") * 6,
     getPartSize("year"), 
     getPartSize("year") * 2, 
     getPartSize("year") * 5, 
@@ -61,6 +64,8 @@ class DateLine extends HTMLElement{
         var r = new Date(this.right);
 
         var space = this.right - this.left;
+        var delta = spaces.find(s => s > space / 3);
+
         console.log(`Milliseconds: ${space}`)
         if(space > getPartSize("year") * 100) {
             console.log("Centuries")

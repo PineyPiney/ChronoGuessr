@@ -1,17 +1,21 @@
-const spaces = [
-    getPartSize("month"),
-    getPartSize("month") * 3,
-    getPartSize("month") * 6,
-    getPartSize("year"), 
-    getPartSize("year") * 2, 
-    getPartSize("year") * 5, 
-    getPartSize("year") * 10,
-    getPartSize("year") * 20, 
-    getPartSize("year") * 50, 
-    getPartSize("year") * 100
-]
+const spaces = {
+    "1 month": getPartSize("month"),
+    "3 month": getPartSize("month") * 3,
+    "6 month": getPartSize("month") * 6,
+    "1 year": getPartSize("year"), 
+    "2 year": getPartSize("year") * 2, 
+    "5 year": getPartSize("year") * 5, 
+    "10 year": getPartSize("year") * 10,
+    "20 year": getPartSize("year") * 20, 
+    "50 year": getPartSize("year") * 50, 
+    "100 year": getPartSize("year") * 100
+}
 
 class DateLine extends HTMLElement{
+
+    get value(){
+        return (this.right - this.left) / 2
+    }
 
     get canvas(){
         return this.childNodes[0];
@@ -49,8 +53,16 @@ class DateLine extends HTMLElement{
     scrollZoom = function(e){
         e.preventDefault();
 
+        var minX = this.canvas.getBoundingClientRect().left;
+        var canvasX = e.clientX - minX
+        var pos = canvasX / this.canvas.clientWidth;
+        var still = this.left + (this.right - this.left) * pos;
+
         var mult = 1.2 ** (e.deltaY * 0.01)
-        this.right = this.left + (this.right - this.left) * mult;
+
+
+        this.left = Math.max(still + (this.left - still) * mult, this.earliest);
+        this.right = Math.min(still + (this.right - still) * mult, this.latest);
 
         this.redrawCanvas();
     }
@@ -64,9 +76,23 @@ class DateLine extends HTMLElement{
         var r = new Date(this.right);
 
         var space = this.right - this.left;
-        var delta = spaces.find(s => s > space / 3);
+        var spacing = Object.entries(spaces).find((e) => e[1] > space / 5);
+        var [num, part] = spacing[0].split(" ");
+        num = parseInt(num)
+
+        var leftPart = getPart(part, l)
+        var rightPart = getPart(part, r)
+        var firstPart = leftPart - (leftPart % num) + num;
+        var lastPart = rightPart - (rightPart % num);
+
+        var array = [...Array((lastPart - firstPart) / num + 1).keys()].map(n => firstPart + n * num);
+        var dates = array.map(n => new Date(`${n}-01-01`));
+        
+        this.drawDates(ctx, l, r, dates, "year")
 
         console.log(`Milliseconds: ${space}`)
+
+        /*
         if(space > getPartSize("year") * 100) {
             console.log("Centuries")
             this.drawCenturies(ctx, l, r);
@@ -86,12 +112,13 @@ class DateLine extends HTMLElement{
         else {
             console.log("Days")
         }
+        */
     }
 
     drawCenturies = function(ctx, l, r){
-        ctx.fillText(l.getFullYear().toString(), 0, this.canvas.height);
+        ctx.fillText(l.getUTCFullYear().toString(), 0, this.canvas.height);
         ctx.textAlign = "right"
-        ctx.fillText(r.getFullYear().toString(), this.canvas.width, this.canvas.height);
+        ctx.fillText(r.getUTCFullYear().toString(), this.canvas.width, this.canvas.height);
     }
 
     drawDates =  function(ctx, l, r, dates, part){
@@ -100,7 +127,7 @@ class DateLine extends HTMLElement{
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
             switch(part){
                 case "year": {
-                    ctx.fillText(date.getFullYear())
+                    ctx.fillText(date.getUTCFullYear(), this.canvas.width * delta, this.canvas.height);
                     break;
                 }
             }
@@ -131,17 +158,17 @@ function getPartSize(part){
 
 function getPart(part, date){
     switch(part){
-        case "year": return date.getFullYear();
-        case "month": return date.getMonth();
-        case "day": return date.getDay();
+        case "year": return date.getUTCFullYear();
+        case "month": return date.getUTCMonth();
+        case "day": return date.getUTCDay();
     }
 }
 
 function setPart(part, date, value){
     switch(part){
-        case "year": return date.setFullYear(value);
-        case "month": return date.setMonth(value);
-        case "day": return date.setDay(value);
+        case "year": return date.setUTCFullYear(value);
+        case "month": return date.setUTCMonth(value);
+        case "day": return date.setUTCDay(value);
     }
     return date;
 }

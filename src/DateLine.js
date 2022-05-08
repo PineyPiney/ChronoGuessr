@@ -55,14 +55,28 @@ class DateLine extends HTMLElement{
 
         // Still is the date where the cursor is, and so is the date that should stay in place
         var minX = this.canvas.getBoundingClientRect().left;
-        var canvasX = e.clientX - minX
+        var canvasX = e.clientX - minX;
         var relativeX = canvasX / this.canvas.clientWidth;
-        var still = this.left + (this.right - this.left) * relativeX;
+        var range = this.right - this.left;
+        var still = this.left + range * relativeX;
 
+        // Scroll sideways by scrolling horizontally
+        var scroll;
+        if(e.deltaX > 0){
+            scroll = Math.min(e.deltaX * 0.002 * range, this.latest - this.right)
+        }
+        else {
+            scroll = Math.max(e.deltaX * 0.002 * range, this.earliest - this.left)
+        }
+        still += scroll;
+
+        // Zoom in by scrolling vertically
         // Then left and right dates should be moved, but limited to the earliest and latest dates
         var mult = 1.2 ** (e.deltaY * 0.01)
-        this.left = Math.max(still + (this.left - still) * mult, this.earliest);
-        this.right = Math.min(still + (this.right - still) * mult, this.latest);
+        this.left = Math.max(still - relativeX * range * mult, this.earliest);
+        this.right = Math.min(still + (1 - relativeX) * range * mult, this.latest);
+
+        
 
         this.redrawCanvas();
     }

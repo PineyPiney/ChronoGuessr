@@ -89,9 +89,6 @@ function addScore(){
     var newPoints = Math.max(0, Math.floor(1000/Math.sqrt(error)));
     points += newPoints;
     scoreText.textContent = `The correct date was ${currentImage.date}, you scored ${newPoints} points.\n You now have ${points} points`;
-
-    answerBox.value = "";
-    calendar.value = "";
 }
 
 var currentImage;

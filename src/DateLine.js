@@ -128,32 +128,45 @@ class DateLine extends HTMLElement{
         var [subNum, subPart] = subSpacing.slice(0, 2);
         var subDates = getEveryMultiple(subNum, subPart, l, r);
         
+        this.cssStyle = getComputedStyle(this)
         ctx.textAlign = "center"
-        ctx.fillStyle = "white"
-        this.drawDates(ctx, l, r, dates, part);
         this.drawMarkers(ctx, l, r, subDates);
-        ctx.fillText(new Date(this.value).getUTCFullYear(), this.canvas.width * 0.5, this.canvas.height * 0.25);
+
+        this.drawDates(ctx, l, r, dates, part);
+        ctx.fillText(new Date(this.value).getUTCFullYear(), this.canvas.width * 0.5, this.canvas.height);
+        this.drawPointer(ctx);
 
         this.dispatchEvent(new Event("change", {
             target: this
         }))
     }
 
+    drawMarkers = function(ctx, l, r, dates){
+        ctx.fillStyle = this.cssStyle.caretColor;
+        for(var date of dates){
+            let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
+            ctx.fillRect((delta - 0.005) * this.canvas.width, 0 * this.canvas.height, 0.01 * this.canvas.width, 0.5 * this.canvas.height);
+        }
+    }
+
     drawDates = function(ctx, l, r, dates, part){
+        ctx.fillStyle = this.cssStyle.color;
         for(var date of dates){
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
             var text = part == "month" ?
                 months[date.getUTCMonth()] :
                 getPart(part, date).toString();
-            ctx.fillText(text, this.canvas.width * delta, this.canvas.height);
+            ctx.fillText(text, this.canvas.width * delta, this.canvas.height * 0.75);
         }
     }
 
-    drawMarkers = function(ctx, l, r, dates){
-        for(var date of dates){
-            let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
-            ctx.fillRect((delta - 0.005) * this.canvas.width, 0.25 * this.canvas.height, 0.01 * this.canvas.width, 0.5 * this.canvas.height);
-        }
+    drawPointer = function(ctx){
+        ctx.fillStyle = this.cssStyle.stopColor;
+        ctx.beginPath();
+        ctx.moveTo(0.46 * this.canvas.width, 0);
+        ctx.lineTo(0.54 * this.canvas.width, 0);
+        ctx.lineTo(0.5 * this.canvas.width, 0.25 * this.canvas.height);
+        ctx.fill();
     }
 }
 

@@ -18,7 +18,14 @@ h1{
 
 body {
     background-color:rgb(0, 0, 0);
-  }
+}
+
+date-line{
+    background-color: white;
+    caret-color: blue;
+    color: black;
+    stop-color: red;
+}
 
 input[type=button]{
     padding: 0 auto;

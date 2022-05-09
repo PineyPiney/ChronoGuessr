@@ -1,3 +1,5 @@
+const { difference } = require("lodash");
+
 const spaces = [
     [1, "month", getPartSize("month")],
     [3, "month", getPartSize("month") * 3],
@@ -28,6 +30,10 @@ const months = [
 
 class DateLine extends HTMLElement{
 
+    static get observedAttributes(){
+        return ['width', 'height']
+    }
+
     get canvas(){
         return this.childNodes[0];
     }
@@ -36,8 +42,12 @@ class DateLine extends HTMLElement{
         return (this.right + this.left) / 2
     }
 
-    get range(){
+    get visRange(){
         return this.right - this.left;
+    }
+
+    get maxRange(){
+        return this.latest - this.earliest;
     }
 
     getAttribute = function(name, def){
@@ -54,11 +64,10 @@ class DateLine extends HTMLElement{
         this.left = this.earliest;
         this.right = this.latest;
 
-        this.res = parseRes(this.getAttribute("res", "1 month"));
-        
+        this.style.width = this.getAttribute("width", "150px");
+        this.style.height = this.getAttribute("height", "30px");
 
-        this.style.width = "250px";
-        this.style.height = "40px";
+        this.res = parseRes(this.getAttribute("res", "1 month"));
         this.style.display = "inline-block";
 
         const canvas = document.createElement("canvas");
@@ -72,57 +81,79 @@ class DateLine extends HTMLElement{
         document.addEventListener("mouseup", (e) => { this.dragging = false })
         document.addEventListener("mousemove", (e) => { if(this.dragging) this.onDrag(e) })
 
+        // This is needed to update the canvas whenever the style changes
+        var observer = new MutationObserver((mutations) => {
+            this.updateStyle();
+        });
+        observer.observe(this, { attributes: true, attributeFilter: ["style"]});
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        this.updateStyle();
+    }
+
+    onDrag = function(e){
+        var delta = e.movementX / this.canvas.width;
+        var pan = this.getPan(-delta * this.visRange)
+        this.left += pan;
+        this.right += pan;
         this.redrawCanvas();
     }
 
     getPan = function(value){
-        if(value > 0) return Math.min(value, this.latest - this.right)
-        else return Math.max(value, this.earliest - this.left)
+        return coerceIn(value, this.earliest - this.value, this.latest - this.value)
     }
 
     scrollZoom = function(e){
         e.preventDefault();
 
-        // Still is the date where the cursor is, and so is the date that should stay in place
+        
         var minX = this.canvas.getBoundingClientRect().left;
         var canvasX = e.clientX - minX;
         var relativeX = canvasX / this.canvas.clientWidth;
-        var range = this.range;
+        var range = this.visRange;
+        // Still is the date where the cursor is, and so is the date that should stay in place
         var still = this.left + range * relativeX;
 
-        // Scroll sideways by scrolling horizontally
+        // Pan sideways by scrolling horizontally
         var pan = this.getPan(e.deltaX * 0.002 * range)
         still += pan;
 
         // Zoom in by scrolling vertically
+        var mult = coerceIn(1.2 ** (e.deltaY * 0.01), this.res / range, this.maxRange / range);
+        range *= mult;
         // Then left and right dates should be moved, but limited to the earliest and latest dates
-        var mult = Math.max(1.2 ** (e.deltaY * 0.01), this.res / range)
-        this.left = Math.max(still - relativeX * range * mult, this.earliest);
-        this.right = Math.min(still + (1 - relativeX) * range * mult, this.latest);
+        this.left = still - relativeX * range;
+        this.right = still + (1 - relativeX) * range;
 
-        this.redrawCanvas();
-    }
+        // By zooming in on a value outside the limits the value can move outside the limits
+        // This part corrects that mistake
+        if(this.value < this.earliest){
+            var dif = this.earliest - this.value;
+            this.left += dif;
+            this.right += dif;
+        }
+        else if(this.value > this.latest){
+            var dif = this.latest - this.value;
+            this.left += dif;
+            this.right += dif;
+        }
 
-    onDrag = function(e){
-        var delta = e.movementX / this.canvas.width;
-        var pan = this.getPan(-delta * this.range)
-        this.left += pan;
-        this.right += pan;
         this.redrawCanvas();
     }
 
     redrawCanvas = function(){
         var ctx = this.canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        ctx.font = "12px Arial"
+        ctx.font = `${Math.floor(this.canvas.height * 0.3)}px Arial`
         ctx.textAlign = "center"
 
         var l = new Date(this.left);
         var r = new Date(this.right);
 
         // Space is the amount of time in range on the canvas, and num and part are decided based on that
-        var space = this.right - this.left;
-        var spacing = spaces.find((e) => e[2] > space / 8);
+        var space = this.visRange;
+        var spacing = spaces.find((e) => e[2] > space * 0.75 * this.canvas.height / this.canvas.width);
         var [num, part] = spacing.slice(0, 2);
         var dates = getEveryMultiple(num, part, l, r)
         
@@ -135,7 +166,8 @@ class DateLine extends HTMLElement{
         this.drawMarkers(ctx, l, r, subDates);
 
         this.drawDates(ctx, l, r, dates, part);
-        ctx.fillText(new Date(this.value).getUTCFullYear(), this.canvas.width * 0.5, this.canvas.height);
+        ctx.fillStyle = this.cssStyle.color;
+        ctx.fillText(new Date(this.value).getUTCFullYear(), this.canvas.width * 0.5, this.canvas.height * 0.97);
         this.drawPointer(ctx);
 
         this.dispatchEvent(new Event("change", {
@@ -144,14 +176,14 @@ class DateLine extends HTMLElement{
     }
 
     drawMarker = function(ctx, delta, width, height){
-        ctx.fillRect((delta - (width / 2)) * this.canvas.width, 0, width * this.canvas.width, height * this.canvas.height);
+        ctx.fillRect(delta * this.canvas.width - width/2, 0, width, height * this.canvas.height);
     }
     
     drawMarkers = function(ctx, l, r, dates){
         ctx.fillStyle = this.cssStyle.caretColor;
         for(var date of dates){
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
-            this.drawMarker(ctx, delta, 0.01, 0.3)
+            this.drawMarker(ctx, delta, 1, 0.3)
         }
     }
 
@@ -159,10 +191,10 @@ class DateLine extends HTMLElement{
         for(var date of dates){
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
             var text = part == "month" ?
-                months[date.getUTCMonth()] :
+                months[date.getMonth()].replace("Jan", date.getUTCFullYear()) :
                 getPart(part, date).toString();
             ctx.fillStyle = this.cssStyle.caretColor;
-            this.drawMarker(ctx, delta, 0.01, 0.4);
+            this.drawMarker(ctx, delta, 2, 0.4);
             ctx.fillStyle = this.cssStyle.color;
             ctx.fillText(text, this.canvas.width * delta, this.canvas.height * 0.7);
         }
@@ -176,6 +208,16 @@ class DateLine extends HTMLElement{
         ctx.lineTo(0.5 * this.canvas.width, 0.25 * this.canvas.height);
         ctx.fill();
     }
+
+    updateStyle = function(){
+        this.canvas.width = this.clientWidth;
+        this.canvas.height = this.clientHeight;
+        this.redrawCanvas();
+    }
+}
+
+function coerceIn(num, min, max){
+    return Math.max(Math.min(num, max), min);
 }
 
 function parseRes(res){

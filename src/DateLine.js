@@ -28,12 +28,16 @@ const months = [
 
 class DateLine extends HTMLElement{
 
+    get canvas(){
+        return this.childNodes[0];
+    }
+
     get value(){
         return (this.right + this.left) / 2
     }
 
-    get canvas(){
-        return this.childNodes[0];
+    get range(){
+        return this.right - this.left;
     }
 
     getAttribute = function(name, def){
@@ -64,8 +68,14 @@ class DateLine extends HTMLElement{
 
         this.zoom = 0
         this.onwheel = this.scrollZoom;
+        this.onmousemove = (e) => { if(e.buttons & 1 == 1) this.onDrag(e) }
 
         this.redrawCanvas();
+    }
+
+    getPan = function(value){
+        if(value > 0) return Math.min(value, this.latest - this.right)
+        else return Math.max(value, this.earliest - this.left)
     }
 
     scrollZoom = function(e){
@@ -75,18 +85,12 @@ class DateLine extends HTMLElement{
         var minX = this.canvas.getBoundingClientRect().left;
         var canvasX = e.clientX - minX;
         var relativeX = canvasX / this.canvas.clientWidth;
-        var range = this.right - this.left;
+        var range = this.range;
         var still = this.left + range * relativeX;
 
         // Scroll sideways by scrolling horizontally
-        var scroll;
-        if(e.deltaX > 0){
-            scroll = Math.min(e.deltaX * 0.002 * range, this.latest - this.right)
-        }
-        else {
-            scroll = Math.max(e.deltaX * 0.002 * range, this.earliest - this.left)
-        }
-        still += scroll;
+        var pan = this.getPan(e.deltaX * 0.002 * range)
+        still += pan;
 
         // Zoom in by scrolling vertically
         // Then left and right dates should be moved, but limited to the earliest and latest dates
@@ -94,8 +98,14 @@ class DateLine extends HTMLElement{
         this.left = Math.max(still - relativeX * range * mult, this.earliest);
         this.right = Math.min(still + (1 - relativeX) * range * mult, this.latest);
 
-        
+        this.redrawCanvas();
+    }
 
+    onDrag = function(e){
+        var delta = e.movementX / this.canvas.width;
+        var pan = this.getPan(-delta * this.range)
+        this.left += pan;
+        this.right += pan;
         this.redrawCanvas();
     }
 

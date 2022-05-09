@@ -103,14 +103,10 @@ customElements.define("date-line", DateLine)
 
 var imageTag = select("img");
 
-var answerBox = select("input[type=text]");
-var calendar = select("input[type=date]");
 var dateLine = select("date-line");
-var button = select("input[type=button]");
+var button = select("button");
 
 var scoreText = select("#score");
-answerBox.addEventListener("change", (event) => guess = Date.parse(event.target.value));
-calendar.addEventListener("change", (event) => guess = Date.parse(event.target.value));
 dateLine.addEventListener("change", (event) => guess = event.target.value);
 button.addEventListener("click", giveAnswer);
 

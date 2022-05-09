@@ -68,7 +68,9 @@ class DateLine extends HTMLElement{
 
         this.zoom = 0
         this.onwheel = this.scrollZoom;
-        this.onmousemove = (e) => { if(e.buttons & 1 == 1) this.onDrag(e) }
+        this.onmousedown = (e) => { this.dragging = true }
+        document.addEventListener("mouseup", (e) => { this.dragging = false })
+        document.addEventListener("mousemove", (e) => { if(this.dragging) this.onDrag(e) })
 
         this.redrawCanvas();
     }
@@ -113,13 +115,14 @@ class DateLine extends HTMLElement{
         var ctx = this.canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.font = "12px Arial"
+        ctx.textAlign = "center"
 
         var l = new Date(this.left);
         var r = new Date(this.right);
 
         // Space is the amount of time in range on the canvas, and num and part are decided based on that
         var space = this.right - this.left;
-        var spacing = spaces.find((e) => e[2] > space / 5);
+        var spacing = spaces.find((e) => e[2] > space / 8);
         var [num, part] = spacing.slice(0, 2);
         var dates = getEveryMultiple(num, part, l, r)
         
@@ -129,7 +132,6 @@ class DateLine extends HTMLElement{
         var subDates = getEveryMultiple(subNum, subPart, l, r);
         
         this.cssStyle = getComputedStyle(this)
-        ctx.textAlign = "center"
         this.drawMarkers(ctx, l, r, subDates);
 
         this.drawDates(ctx, l, r, dates, part);
@@ -141,22 +143,28 @@ class DateLine extends HTMLElement{
         }))
     }
 
+    drawMarker = function(ctx, delta, width, height){
+        ctx.fillRect((delta - (width / 2)) * this.canvas.width, 0, width * this.canvas.width, height * this.canvas.height);
+    }
+    
     drawMarkers = function(ctx, l, r, dates){
         ctx.fillStyle = this.cssStyle.caretColor;
         for(var date of dates){
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
-            ctx.fillRect((delta - 0.005) * this.canvas.width, 0 * this.canvas.height, 0.01 * this.canvas.width, 0.5 * this.canvas.height);
+            this.drawMarker(ctx, delta, 0.01, 0.3)
         }
     }
 
     drawDates = function(ctx, l, r, dates, part){
-        ctx.fillStyle = this.cssStyle.color;
         for(var date of dates){
             let delta = (date.getTime() - l.getTime()) / (r.getTime() - l.getTime());
             var text = part == "month" ?
                 months[date.getUTCMonth()] :
                 getPart(part, date).toString();
-            ctx.fillText(text, this.canvas.width * delta, this.canvas.height * 0.75);
+            ctx.fillStyle = this.cssStyle.caretColor;
+            this.drawMarker(ctx, delta, 0.01, 0.4);
+            ctx.fillStyle = this.cssStyle.color;
+            ctx.fillText(text, this.canvas.width * delta, this.canvas.height * 0.7);
         }
     }
 
@@ -228,22 +236,26 @@ function getEveryMultiple(mag, part, leftDate, rightDate){
 
     var leftPart = getPart(part, leftDate)
     var rightPart = getPart(part, rightDate)
-    var firstPart = leftPart - (leftPart % mag) + mag;
-    var lastPart = rightPart - (rightPart % mag);
 
     switch(part){
         case "year": {
+            var firstPart = leftPart - (leftPart % mag) + mag;
+            var lastPart = rightPart - (rightPart % mag);
+
             var array = [...Array((lastPart - firstPart) / mag + 1).keys()].map(n => firstPart + n * mag);
-            var dates = array.map(n => new Date(`${n}-01-01`));
+            var dates = array.map(n => new Date(n, 0, 1));
             return dates;
         }
         case "month": {
+            var firstPart = leftPart - ((leftPart + 1) % mag) - mag;
+            var lastPart = rightPart - ((rightPart + 1) % mag);
+
             var firstYear = leftDate.getUTCFullYear();
             var lastYear = rightDate.getUTCFullYear();
             lastPart += (lastYear - firstYear) * 12;
             
             var array = [...Array((lastPart - firstPart) / mag + 1).keys()].map(n => firstPart + n * mag);
-            var dates = array.map(n => new Date(`${firstYear + Math.floor(((n - 1) / 12))}-${((n - 1) % 12) + 1}-01`));
+            var dates = array.map(n => new Date(firstYear, n + 1, 1));
             return dates;
         }
         
